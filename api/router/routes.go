@@ -1,21 +1,16 @@
 package router
 
 import (
-	"github.com/gin-gonic/gin"
-	"api/db"
 	"api/handler"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func SetupRouter(conn *db.ConnWrapper) *gin.Engine {
+// SetupRouter wires the keyword routes.
+func SetupRouter(pool *pgxpool.Pool) *gin.Engine {
 	r := gin.Default()
-
-	r.Get("/keywards", handler.GetKeywardsHandler(func() *db.ConnWrapper {
-		return conn
-	}))
-
-	r.Post("/keywards", handler.InsertKeywardsHandler(func() *db.ConnWrapper {
-		return conn
-	}))
-
+	r.GET("/keywords", handler.GetKeywordsHandler(pool))
+	r.POST("/keywords", handler.InsertKeywordHandler(pool))
 	return r
 }

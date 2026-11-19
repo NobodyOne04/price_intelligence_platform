@@ -2,34 +2,42 @@ package handler
 
 import (
 	"net/http"
+	"strings"
+
 	"api/db"
-	"api/models"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func GetKeywordsHandler(connGetter func() *db.ConnWrapper) gin.HandlerFunc {
+// GetKeywordsHandler lists the enabled keywords.
+func GetKeywordsHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		keywords, err := db.GetKeywords(connGetter())
+		keywords, err := db.GetKeywords(c.Request.Context(), pool)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get keywords"})
 			return
 		}
-		return c.JSON(http.StatusOK, keywords)
+		c.JSON(http.StatusOK, keywords)
 	}
 }
 
-func InsertKeywordHandler(connGetter func() *db.ConnWrapper) gin.HandlerFunc {
+type newKeyword struct {
+	Value string `json:"value" binding:"required"`
+}
+
+// InsertKeywordHandler adds a keyword from {"value": "..."}.
+func InsertKeywordHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var k models.Keywords
-		if err := c.ShouldBindJSON(&k); err != nill {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid input"})
+		var k newKeyword
+		if err := c.ShouldBindJSON(&k); err != nil || strings.TrimSpace(k.Value) == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid input: want {\"value\": \"...\"}"})
 			return
 		}
-		if err := db.InsertKeyword(connGetter(), k); err != nil {
-			c.JSON(http.http.StatusInternalServerError, gin.H{"error": "failed to insert keyword"})
+		if err := db.InsertKeyword(c.Request.Context(), pool, strings.TrimSpace(k.Value)); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to insert keyword"})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"message": "keyword added"})
+		c.JSON(http.StatusCreated, gin.H{"message": "keyword added"})
 	}
 }
