@@ -1,0 +1,23 @@
+# 0003. API and crawlers as separate Go modules and containers, Postgres for keywords
+
+- Status: Accepted
+- Date: 2026-11-19
+
+The keyword API and the crawlers are separate modules with their own Dockerfiles, sharing
+Postgres; the API decides what to track, the crawlers fetch prices.
+
+## Technical details
+- **Modules**: `api/` (module `api`) and `crawlers/` (module `crawlers`), each with its own
+  `go.mod`; built from their own folders.
+- **API (planned, not compiling yet)**: gin router with `GET` / `POST` on keywords; pgx
+  connection from `PG_URL`; a `keywords` table with `id`, `value`, `enabled`, `created_at`,
+  `updated_at`; `PORT` env, default 8080; `.env` loaded with godotenv when present.
+- **Containers**: `docker/api.Dockerfile` (copies a `config.env` into the image) and
+  `docker/crawlers.Dockerfile`, both `golang:1.23-alpine` builder → `alpine:latest`.
+- **State**: `api/go.mod` and the root `Makefile` are empty; the API code has compile errors.
+  The crawler side works.
+
+## Technologies and alternatives
+- Involved: Go 1.23, gin, pgx v5, godotenv, Docker, PostgreSQL.
+- Alternatives: one binary with both roles (simpler now, harder to scale crawlers apart);
+  a queue between API and crawlers (needed later for scheduling, not yet).

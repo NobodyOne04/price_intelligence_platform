@@ -1,0 +1,23 @@
+# 0002. Crawlers as Parser implementations in a registry
+
+- Status: Accepted
+- Date: 2026-11-19
+
+Each store is a package implementing one small `Parser` interface, and a registry lists them, so
+adding a store doesn't touch the runner.
+
+## Technical details
+- **Interface** (`crawlers/common/interfaces.go`): `Name() string`,
+  `Parse(keyword string) ([]Result, error)`; `Result` holds the product title and its
+  `Variant`s (price, stock, properties map).
+- **Registry** (`crawlers/registry/registry.go`): `All()` returns the parsers.
+- **Runner** (`crawlers/main.go`): starts each parser for the keyword `laptop` in a goroutine
+  and logs how many results it found. `wg.Wait()` sits inside the loop, so the parsers run one
+  after another, not in parallel.
+- **Amazon** (`crawlers/amazon/crawler.go`): colly v2 with a search collector feeding a product
+  collector; visits `https://www.amazon.com/s?k=<keyword>`.
+
+## Technologies and alternatives
+- Involved: Go 1.23, gocolly/colly v2 (goquery, htmlquery).
+- Alternatives: one crawler per binary (more deploy units); a headless browser (handles JS
+  pages, much heavier); official product APIs (where available, more reliable than scraping).
