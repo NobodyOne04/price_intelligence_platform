@@ -133,4 +133,3 @@ func setupProductCollector(cProduct *colly.Collector, results *[]common.Result) 
 		log.Printf("Product error %d on %s: %v\n", r.StatusCode, r.Request.URL, err)
 	})
 }
-

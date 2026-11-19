@@ -12,8 +12,8 @@ adding a store doesn't touch the runner.
   `Variant`s (price, stock, properties map).
 - **Registry** (`crawlers/registry/registry.go`): `All()` returns the parsers.
 - **Runner** (`crawlers/main.go`): starts each parser for the keyword `laptop` in a goroutine
-  and logs how many results it found. `wg.Wait()` sits inside the loop, so the parsers run one
-  after another, not in parallel.
+  and logs how many results it found; `wg.Wait()` after the loop, so they run in parallel
+  (until 2026-11-19 it sat inside the loop and they ran one after another).
 - **Amazon** (`crawlers/amazon/crawler.go`): colly v2 with a search collector feeding a product
   collector; visits `https://www.amazon.com/s?k=<keyword>`.
 

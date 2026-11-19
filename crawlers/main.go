@@ -26,8 +26,6 @@ func main() {
 
 			log.Printf("%s: %d results\n", p.Name(), len(results))
 		}(parser)
-
-		wg.Wait()
 	}
+	wg.Wait() // after the loop, so the parsers run in parallel
 }
-

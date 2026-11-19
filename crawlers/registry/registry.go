@@ -21,4 +21,3 @@ func All() []common.Parser {
 	}
 	return out
 }
-

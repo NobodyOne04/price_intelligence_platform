@@ -30,4 +30,3 @@ type Result struct {
 	UpdateAt      time.Time
 	Source        string
 }
-

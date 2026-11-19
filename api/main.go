@@ -1,13 +1,14 @@
 package main
 
 import (
+	"context"
 	"log"
 	"os"
-	"context"
 
-	"github.com/joho/godotenv"
 	"api/db"
 	"api/router"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -15,21 +16,19 @@ func main() {
 		log.Println("No .env file was found")
 	}
 
-	conn, err := db.Connect()
+	pool, err := db.Connect(context.Background())
 	if err != nil {
-		log.Fatalf("Cannot connect to the DB")
+		log.Fatalf("Cannot connect to the DB: %v", err)
 	}
-	defer conn.Close(context.Background())
-
-	connWrapper := &db.ConnWrapper(Conn: conn)
+	defer pool.Close()
 
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
-	log.Println("API is launced on port: %s", port)
+	log.Printf("API is launched on port: %s", port)
 
-	if err := r.Run(":" + port); err != nil {
+	if err := router.SetupRouter(pool).Run(":" + port); err != nil {
 		log.Fatalf("Server instance failed: %v", err)
 	}
 }

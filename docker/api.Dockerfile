@@ -1,15 +1,14 @@
-FROM golang:1.23-alpine AS builder
+# build from the repo root: docker build -f docker/api.Dockerfile -t price-api .
+FROM golang:1.25-alpine AS builder
 
 WORKDIR /app
 
-RUN apk add --no-cache git
-
-COPY go.mod ./
+COPY api/go.mod api/go.sum ./
 RUN go mod download
 
-COPY . .
+COPY api/ .
 
-RUN go build -o api main.go
+RUN go build -o api .
 
 
 FROM alpine:latest
@@ -19,9 +18,8 @@ RUN apk add --no-cache ca-certificates
 WORKDIR /app
 
 COPY --from=builder /app/api .
-COPY config.env .
 
+# configuration comes from the environment: PG_URL, PORT (default 8080)
 EXPOSE 8080
 
 CMD ["./api"]
-

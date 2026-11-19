@@ -1,15 +1,16 @@
+# build from the repo root: docker build -f docker/crawlers.Dockerfile -t price-crawlers .
 FROM golang:1.23-alpine AS builder
 
-RUN apk add --no-cache git ca-certificates
+RUN apk add --no-cache ca-certificates
 
 WORKDIR /app
 
-COPY ../crawlers/go.mod ../crawlers/go.sum ./
+COPY crawlers/go.mod crawlers/go.sum ./
 RUN go mod download
 
-COPY ../crawlers .
+COPY crawlers/ .
 
-RUN go build -o crawler main.go
+RUN go build -o crawler .
 
 FROM alpine:latest
 
